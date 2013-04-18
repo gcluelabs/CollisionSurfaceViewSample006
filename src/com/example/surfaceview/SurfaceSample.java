@@ -73,12 +73,12 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 	/**
 	 * 床のx座標
 	 */
-	private int floorX = DY*5;
+	private int floorX[] = {DX * 15, DX * 12, DX * 8, DX * 3};
 	
 	/**
 	 * 床y座標
 	 */
-	private int floorY = DY*20;	
+	private int floorY[] = {DY * 5, DY * 10, DY * 15, DY * 20};	
 	/**
 	 * Thread
 	 */
@@ -104,7 +104,7 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 		Log.i("SURFACE", "MySurfaceView()");
 
 		// SensorManager
-		mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+		mSensorManager = (SensorManager) context.getSystemService(context.SENSOR_SERVICE);
 
 		// Sensorの取得とリスナーへの登録
 		List< Sensor > sensors = mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
@@ -167,22 +167,33 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 			// 速度の分だけ移動する
 			myY += v;
 			
-			// あたり判定
-			if (((myY < floorY + floorBitmap.getHeight()) && (myY + myBitmap.getHeight() > floorY))
-				&& ((myX + myBitmap.getWidth() > floorX) && (myX < floorX + floorBitmap.getWidth()))) {
-				
-				// 床にめり込まないようにする
-				myY = floorY - myBitmap.getHeight();
-				
-				// 時間を初期化
-				count = 0;
-				
-				// 跳ね返りの速度
-				v = -v * 0.8f;
-			} else {
-				
+			// 当たったかどうかの判定フラグ
+			boolean isAtari = false;
+			
+			for (int i = 0; i < floorX.length; i++) {
+				if (v > 0 && ((myY < floorY[i] + floorBitmap.getHeight()) && (myY + myBitmap.getHeight() > floorY[i]))
+						&& ((myX + myBitmap.getWidth() > floorX[i]) && (myX < floorX[i] + floorBitmap.getWidth()))) {
+					
+						// 床にめり込まないようにする
+						myY = floorY[i] - myBitmap.getHeight();
+						
+						// 時間を初期化
+						count = 0;
+						
+						// 跳ね返りの速度
+						v = -v * 0.8f;
+						
+						// 当たった場合は、trueにする
+						isAtari = true;
+						
+						// 当たったらforループをbreak
+						break;
+				}
+			}
+			
+			if (!isAtari) {
 				// 速度の計算
-				v = v + g * count/3;
+				v = v + g * count / 3;
 				
 				// 最高速度の設定
 				if (v > 50) {
@@ -211,7 +222,9 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 				canvas.drawBitmap(myBitmap, myX, myY, mainPaint);  
 					
 				// 床の描画
-				canvas.drawBitmap(floorBitmap, floorX, floorY, mainPaint);
+				for (int i = 0; i < floorX.length; i++) {
+					canvas.drawBitmap(floorBitmap, floorX[i], floorY[i], mainPaint);
+				}
 				
 				// 画面に描画をする
 				getHolder().unlockCanvasAndPost(canvas);
