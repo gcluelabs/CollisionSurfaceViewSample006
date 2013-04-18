@@ -57,6 +57,10 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 	private Bitmap myBitmap; 
 	
 	/**
+	 * 床を格納する変数
+	 */
+	private Bitmap floorBitmap;
+	/**
 	 * 自分のx座標
 	 */
 	private int myX = DX*5;
@@ -66,6 +70,15 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 	 */
 	private int myY = DY*5;
 	
+	/**
+	 * 床のx座標
+	 */
+	private int floorX = DY*5;
+	
+	/**
+	 * 床y座標
+	 */
+	private int floorY = DY*20;	
 	/**
 	 * Thread
 	 */
@@ -104,6 +117,9 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 		Resources res = this.getContext().getResources(); 
 		// 画像の読み込み(res/drawable/droid.png)  
 		myBitmap = BitmapFactory.decodeResource(res, R.drawable.droid);
+		
+		// 画像の読み込み(res/drawable/floor.png)
+		floorBitmap = BitmapFactory.decodeResource(res, R.drawable.floor);
 		
 		// Callbackを登録する
 		getHolder().addCallback(this);
@@ -171,10 +187,14 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 				canvas.drawText("count:" + count, 20, 20, mainPaint);
 				canvas.drawText("y:" + myY, 20, 40, mainPaint);
 				canvas.drawText("v:" + v, 20, 60, mainPaint);
+
 				
 				// 画像の描画
 				canvas.drawBitmap(myBitmap, myX, myY, mainPaint);  
 					
+				// 床の描画
+				canvas.drawBitmap(floorBitmap, floorX, floorY, mainPaint);
+				
 				// 画面に描画をする
 				getHolder().unlockCanvasAndPost(canvas);
 			}
