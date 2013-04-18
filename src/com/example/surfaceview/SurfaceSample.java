@@ -29,9 +29,8 @@ public class SurfaceSample extends Activity {
 	}
 }
 
-class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback,
-		Runnable, SensorEventListener {
-
+class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runnable, SensorEventListener {
+	
 	/**
 	 * 描画するCount値
 	 */
@@ -41,49 +40,58 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback,
 	 * SensorManager
 	 */
 	private SensorManager mSensorManager;
-
+	
 	/**
 	 * 画像を格納する変数
 	 */
-	private Bitmap myBitmap;
-
+	private Bitmap myBitmap; 
+	
 	/**
-	 * x座標
+	 * 自分のx座標
 	 */
 	private int myX = 100;
-
+	
 	/**
-	 * y座標
+	 * 自分の　y座標
 	 */
 	private int myY = 100;
+	
 
+	/**
+	 * Thread
+	 */
+	private Thread mThread;
+	
+	/**
+	 * Threadが動いているかどうかの判断
+	 */
+	private boolean isRunning = false;
+	
 	public MySurfaceView(Context context) {
 		super(context);
 		Log.i("SURFACE", "MySurfaceView()");
 
 		// SensorManager
-		mSensorManager = (SensorManager) context
-				.getSystemService(context.SENSOR_SERVICE);
+		mSensorManager = (SensorManager) context.getSystemService(context.SENSOR_SERVICE);
 
 		// Sensorの取得とリスナーへの登録
-		List<Sensor> sensors = mSensorManager
-				.getSensorList(Sensor.TYPE_ORIENTATION);
+		List< Sensor > sensors = mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
 		if (sensors.size() > 0) {
 			Sensor sensor = sensors.get(0);
-			mSensorManager.registerListener(this, sensor,
-					SensorManager.SENSOR_DELAY_FASTEST);
+			mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
 		}
-
-		// Resourceインスタンスの生成
-		Resources res = this.getContext().getResources();
-		// 画像の読み込み(res/drawable/ic_launcher.png) */
-		myBitmap = BitmapFactory.decodeResource(res, R.drawable.ic_launcher);
-
+		
+		// Resourceインスタンスの生成 
+		Resources res = this.getContext().getResources(); 
+		// 画像の読み込み(res/drawable/droid.png)  
+		myBitmap = BitmapFactory.decodeResource(res, R.drawable.droid);
+		
 		// Callbackを登録する
 		getHolder().addCallback(this);
 
 		// Threadを起動する
-		Thread mThread = new Thread(this);
+		isRunning = true;
+		mThread = new Thread(this);
 		mThread.start();
 	}
 
@@ -97,6 +105,14 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback,
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		Log.i("SURFACE", "surfaceDestroyed()");
 		mSensorManager.unregisterListener(this);
+		
+		// Threadを破棄する
+		isRunning = false;
+		try {
+			mThread.join();
+		} catch (InterruptedException ex) {
+		}
+		mThread = null;
 	}
 
 	@Override
@@ -107,20 +123,20 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback,
 	@Override
 	public void run() {
 		Log.i("SURFACE", "run()");
-		while (true) {
+		while (isRunning) {
 			Log.i("SURFACE", "loop");
 
 			// countに+1する
 			count++;
-
+			
 			// Canvasを取得する
 			Canvas canvas = getHolder().lockCanvas();
 
 			if (canvas != null) {
-
+				
 				// 背景を青くする
 				canvas.drawColor(Color.BLUE);
-
+				
 				// 描画するための線の色を設定
 				Paint mainPaint = new Paint();
 				mainPaint.setStyle(Paint.Style.FILL);
@@ -128,10 +144,10 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback,
 
 				// 文字を描画
 				canvas.drawText("" + count, 20, 20, mainPaint);
-
+				
 				// 画像の描画
-				canvas.drawBitmap(myBitmap, myX, myY, mainPaint);
-
+				canvas.drawBitmap(myBitmap, myX, myY, mainPaint);  
+					
 				// 画面に描画をする
 				getHolder().unlockCanvasAndPost(canvas);
 			}
@@ -155,9 +171,9 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback,
 			Log.i("SURFACE", "yaw:" + sensorEvent.values[0]);
 			Log.i("SURFACE", "picth:" + sensorEvent.values[1]);
 			Log.i("SURFACE", "roll:" + sensorEvent.values[2]);
-
-			myX -= sensorEvent.values[2] / 10;
-			myY -= sensorEvent.values[1] / 10;
+			
+			myX -= sensorEvent.values[2]/10;
+			myY -= sensorEvent.values[1]/10;
 		}
 	}
 }
