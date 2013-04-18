@@ -32,6 +32,16 @@ public class SurfaceSample extends Activity {
 class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runnable, SensorEventListener {
 	
 	/**
+	 * 画面のグリッド(X軸)
+	 */
+	private int DX = 20;
+	
+	/**
+	 * 画面のグリッド(Y軸)
+	 */
+	private int DY = 20;
+	
+	/**
 	 * 描画するCount値
 	 */
 	private int count = 0;
@@ -49,14 +59,13 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 	/**
 	 * 自分のx座標
 	 */
-	private int myX = 100;
+	private int myX = DX*5;
 	
 	/**
 	 * 自分の　y座標
 	 */
-	private int myY = 100;
+	private int myY = DY*5;
 	
-
 	/**
 	 * Thread
 	 */
@@ -66,6 +75,16 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 	 * Threadが動いているかどうかの判断
 	 */
 	private boolean isRunning = false;
+	
+	/**
+	 * 速度
+	 */
+	private float v;
+	
+	/**
+	 * 重力
+	 */
+	private float g = 9.8f;
 	
 	public MySurfaceView(Context context) {
 		super(context);
@@ -129,6 +148,12 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 			// countに+1する
 			count++;
 			
+			// 速度の分だけ移動する
+			myY += v;
+			
+			// 速度の計算
+			v = v + g * count / 3;
+			
 			// Canvasを取得する
 			Canvas canvas = getHolder().lockCanvas();
 
@@ -143,7 +168,9 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 				mainPaint.setARGB(255, 255, 255, 100);
 
 				// 文字を描画
-				canvas.drawText("" + count, 20, 20, mainPaint);
+				canvas.drawText("count:" + count, 20, 20, mainPaint);
+				canvas.drawText("y:" + myY, 20, 40, mainPaint);
+				canvas.drawText("v:" + v, 20, 60, mainPaint);
 				
 				// 画像の描画
 				canvas.drawBitmap(myBitmap, myX, myY, mainPaint);  
@@ -168,12 +195,12 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 	public void onSensorChanged(SensorEvent sensorEvent) {
 		Log.i("SURFACE", "SensorChanged()");
 		if (sensorEvent.sensor.getType() == Sensor.TYPE_ORIENTATION) {
-			Log.i("SURFACE", "yaw:" + sensorEvent.values[0]);
-			Log.i("SURFACE", "picth:" + sensorEvent.values[1]);
-			Log.i("SURFACE", "roll:" + sensorEvent.values[2]);
+//			Log.i("SURFACE", "yaw:" + sensorEvent.values[0]);
+//			Log.i("SURFACE", "picth:" + sensorEvent.values[1]);
+//			Log.i("SURFACE", "roll:" + sensorEvent.values[2]);
 			
 			myX -= sensorEvent.values[2]/10;
-			myY -= sensorEvent.values[1]/10;
+			//myY -= sensorEvent.values[1]/10;
 		}
 	}
 }
