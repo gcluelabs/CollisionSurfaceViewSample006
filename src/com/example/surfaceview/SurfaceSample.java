@@ -99,6 +99,11 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 	 */
 	private float g = 9.8f;
 	
+	/**
+	 * 画面の位置
+	 */
+	private float base = 0;
+	
 	public MySurfaceView(Context context) {
 		super(context);
 		Log.i("SURFACE", "MySurfaceView()");
@@ -167,15 +172,28 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 			// 速度の分だけ移動する
 			myY += v;
 			
+			// 自分のキャラクターに応じて位置を移動
+			if (v < 0) {
+				if (myY < 300) {
+					base -= v / 2;
+					myY += v / 2;
+				} else {
+					myY += v;
+				}
+			} else {
+				myY += v;
+			}
 			// 当たったかどうかの判定フラグ
 			boolean isAtari = false;
 			
 			for (int i = 0; i < floorX.length; i++) {
-				if (v > 0 && ((myY < floorY[i] + floorBitmap.getHeight()) && (myY + myBitmap.getHeight() > floorY[i]))
-						&& ((myX + myBitmap.getWidth() > floorX[i]) && (myX < floorX[i] + floorBitmap.getWidth()))) {
-					
+				if (v > 0 && (((myY < base + floorY[i] + floorBitmap.getHeight()) 
+								&& (myY + myBitmap.getHeight() > base + floorY[i]))
+						&& ((myX + myBitmap.getWidth() > floorX[i]) 
+								&& (myX < floorX[i] + floorBitmap.getWidth())))) {
+
 						// 床にめり込まないようにする
-						myY = floorY[i] - myBitmap.getHeight();
+						myY = (int) (base + floorY[i] - myBitmap.getHeight());
 						
 						// 時間を初期化
 						count = 0;
@@ -191,13 +209,16 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 				}
 			}
 			
+			/**
+			* 落下時の速度抑制
+			*/
 			if (!isAtari) {
 				// 速度の計算
 				v = v + g * count / 3;
-				
-				// 最高速度の設定
-				if (v > 50) {
-					v = 50;
+
+				// 落下速度の抑制
+				if (v > 30) {
+					v = 30;
 				}
 			}
 			// Canvasを取得する
@@ -223,7 +244,7 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 					
 				// 床の描画
 				for (int i = 0; i < floorX.length; i++) {
-					canvas.drawBitmap(floorBitmap, floorX[i], floorY[i], mainPaint);
+					canvas.drawBitmap(floorBitmap, floorX[i], base + floorY[i], mainPaint);
 				}
 				
 				// 画面に描画をする
