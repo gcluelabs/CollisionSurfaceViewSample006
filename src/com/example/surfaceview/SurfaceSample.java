@@ -104,7 +104,7 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 		Log.i("SURFACE", "MySurfaceView()");
 
 		// SensorManager
-		mSensorManager = (SensorManager) context.getSystemService(context.SENSOR_SERVICE);
+		mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
 
 		// Sensorの取得とリスナーへの登録
 		List< Sensor > sensors = mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
@@ -167,9 +167,28 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 			// 速度の分だけ移動する
 			myY += v;
 			
-			// 速度の計算
-			v = v + g * count / 3;
-			
+			// あたり判定
+			if (((myY < floorY + floorBitmap.getHeight()) && (myY + myBitmap.getHeight() > floorY))
+				&& ((myX + myBitmap.getWidth() > floorX) && (myX < floorX + floorBitmap.getWidth()))) {
+				
+				// 床にめり込まないようにする
+				myY = floorY - myBitmap.getHeight();
+				
+				// 時間を初期化
+				count = 0;
+				
+				// 跳ね返りの速度
+				v = -v * 0.8f;
+			} else {
+				
+				// 速度の計算
+				v = v + g * count/3;
+				
+				// 最高速度の設定
+				if (v > 50) {
+					v = 50;
+				}
+			}
 			// Canvasを取得する
 			Canvas canvas = getHolder().lockCanvas();
 
@@ -187,7 +206,6 @@ class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback, Runna
 				canvas.drawText("count:" + count, 20, 20, mainPaint);
 				canvas.drawText("y:" + myY, 20, 40, mainPaint);
 				canvas.drawText("v:" + v, 20, 60, mainPaint);
-
 				
 				// 画像の描画
 				canvas.drawBitmap(myBitmap, myX, myY, mainPaint);  
